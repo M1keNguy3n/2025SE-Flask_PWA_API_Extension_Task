@@ -7,6 +7,7 @@ import logging
 
 import database_manager as dbHandler
 
+auth_key = "2CXc33NGBtOX97cO"
 
 api = Flask(__name__)
 cors = CORS(api)
@@ -22,15 +23,25 @@ limiter = Limiter(
 @api.route("/", methods=["GET"])
 @limiter.limit("3/second", override_defaults=False)
 def get():
-    return ("API Works"), 200
+    if request.args.get("lang") and request.args.get("lang").isalpha():
+        lang = request.args.get("lang")
+        lang = lang.upper()
+        content = dbHandler.extension_get(lang)
+    else:
+        content = dbHandler.extension_get("%")
+    return content, 200
 
 
 @api.route("/add_extension", methods=["POST"])
 @limiter.limit("1/second", override_defaults=False)
 def post():
-    data = request.get_json()
-    return data, 201
+    if request.headers.get("Authorisation") == auth_key:
+        data = request.get_json()
+        response = dbHandler.extension_add(data)
+    else:
+        return {"error": "Unauthorized"}, 401
+    return response
 
 
 if __name__ == "__main__":
-    api.run(debug=True, host="0.0.0.0", port=1000)
+    api.run(debug=True, host="0.0.0.0", port=4000)
