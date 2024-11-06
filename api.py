@@ -1,3 +1,4 @@
+import logging.config
 from flask import Flask
 from flask import request
 from flask_cors import CORS
@@ -42,6 +43,13 @@ def post():
         return {"error": "Unauthorized"}, 401
     return response
 
+api_log = logging.getLogger(__name__)
+logging.config(
+    filename = "api_security_log.log",
+    encoding = "utf-8",
+    level = logging.DEBUG,
+    format = "%(schema)s %(message)s",
+)
 
 if __name__ == "__main__":
     api.run(debug=True, host="0.0.0.0", port=4000)
